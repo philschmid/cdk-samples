@@ -122,7 +122,7 @@ class HuggingfaceSagemaker(cdk.Stack):
             ],
         )
         # Creates Real-Time Endpoint
-        self.endpoint = sagemaker.CfnEndpoint(
+        endpoint = sagemaker.CfnEndpoint(
             self,
             "hf_endpoint",
             endpoint_name=endpoint_name,
@@ -131,4 +131,33 @@ class HuggingfaceSagemaker(cdk.Stack):
 
         # adds depends on for different resources
         endpoint_configuration.node.add_dependency(model)
-        self.endpoint.node.add_dependency(endpoint_configuration)
+        endpoint.node.add_dependency(endpoint_configuration)
+
+        ##############################
+        #       Lambda Function      #
+        ##############################
+
+        # create function
+        lambda_fn = lambda_.Function(
+            self,
+            "sm_invoke",
+            code=lambda_.Code.from_asset(lambda_handler_path),
+            handler="handler.proxy",
+            timeout=cdk.Duration.seconds(60),
+            runtime=lambda_.Runtime.PYTHON_3_8,
+            environment={"ENDPOINT_NAME": endpoint.endpoint_name},
+        )
+
+        # add policy for invoking
+        lambda_fn.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "sagemaker:InvokeEndpoint",
+                ],
+                resources=[
+                    f"arn:aws:sagemaker:{self.region}:{self.account}:endpoint/{endpoint.endpoint_name}",
+                ],
+            )
+        )
+
+        api = _apigw.LambdaRestApi(self, "hf_api_gw", proxy=True, handler=lambda_fn)

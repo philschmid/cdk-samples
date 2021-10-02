@@ -8,7 +8,6 @@ import os
 from aws_cdk import core as cdk
 
 from huggingface_sagemaker.huggingface_sagemaker import HuggingfaceSagemaker
-from huggingface_sagemaker.aws_lambda import AwsLambda
 
 # Environment
 # CDK_DEFAULT_ACCOUNT and CDK_DEFAULT_REGION are set based on the
@@ -18,6 +17,5 @@ my_environment = cdk.Environment(account=os.environ["CDK_DEFAULT_ACCOUNT"], regi
 
 app = cdk.App()
 sagemaker = HuggingfaceSagemaker(app, "HuggingfaceSagemakerEndpoint", env=my_environment)
-AwsLambda(app, "HuggingfaceSagemakerLambda", env=my_environment, sagemaker=sagemaker)
 
 app.synth()
