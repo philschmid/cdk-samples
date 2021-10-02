@@ -1,0 +1,5 @@
+aws_cdk.aws_sagemaker>=1.123.0
+aws_cdk.aws_iam>=1.123.0
+aws-cdk.core>=1.123.0
+aws-cdk.aws-lambda>=1.123.0
+aws-cdk.aws-apigateway>=1.123.0
