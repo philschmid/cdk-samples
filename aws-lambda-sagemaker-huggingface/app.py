@@ -7,7 +7,7 @@ import os
 # being updated to use `cdk`.  You may delete this import if you don't need it.
 from aws_cdk import core as cdk
 
-from huggingface_sagemaker.huggingface_sagemaker import HuggingfaceSagemaker
+from huggingface_sagemaker.huggingface_stack import HuggingfaceSagemaker
 
 # Environment
 # CDK_DEFAULT_ACCOUNT and CDK_DEFAULT_REGION are set based on the
