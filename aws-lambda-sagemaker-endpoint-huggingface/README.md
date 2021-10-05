@@ -9,7 +9,8 @@ This example creates an SageMaker real-time Endpoint using the Hugging Face DLC.
 
 clone the repository 
 ```bash
-git clone https://github.com/philschmid/sample-huggingface-sagemaker-cdk.git
+git clone https://github.com/philschmid/cdk-samples.git
+cd aws-lambda-sagemaker-endpoint-huggingface
 ```
 
 Install the cdk required dependencies. Make your you have the [cdk](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_install) installed.
