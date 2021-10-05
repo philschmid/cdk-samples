@@ -45,16 +45,10 @@ class HuggingfaceSagemaker(cdk.Stack):
         #      Context Parameter     #
         ##############################
 
-        huggingface_model = self.node.try_get_context("model")
-        huggingface_task = self.node.try_get_context("task")
+        huggingface_model = self.node.try_get_context("model") or "distilbert-base-uncased-finetuned-sst-2-english"
+        huggingface_task = self.node.try_get_context("task") or "text-classification"
         instance_type = self.node.try_get_context("instance_type") or "ml.m5.xlarge"
         execution_role = self.node.try_get_context("role")
-
-        if huggingface_model is None and huggingface_task is None:
-            raise ValueError(
-                "You need to define `model` and `task` in your context, "
-                'e.g. `-c model="distilbert-base-uncased-finetuned-sst-2-english"  -c task="text-classification"`',
-            )
 
         ##############################
         #      Stack Variables      #

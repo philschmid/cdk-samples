@@ -28,16 +28,25 @@ Deploy your Hugging Face Transformer model to Amazon SageMaker
 
 ```bash
 cdk deploy \
-  -c model="distilbert-base-uncased-finetuned-sst-2-english" \
-  -c task="text-classification"
+  -c model="sshleifer/distilbart-cnn-12-6" \
+  -c task="summarization"
 ```
+
+request your endpoint
+```bash
+curl --request POST \
+  --url {YOUR-URL} \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"inputs": "Hugging Face, the winner of VentureBeat’s Innovation in Natural Language Process/Understanding Award for 2021, is looking to level the playing field. The team, launched by Clément Delangue and Julien Chaumond in 2016, was recognized for its work in democratizing NLP, the global market value for which is expected to hit $35.1 billion by 2026. This week, Google’s former head of Ethical AI Margaret Mitchell joined the team."
+}'
+```
+
 
 clean up
 
 ```bash
-cdk destroy \
-  -c model="distilbert-base-uncased-finetuned-sst-2-english" \
-  -c task="text-classification"
+cdk destroy
 ```
 
 
