@@ -55,6 +55,8 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         #  Node Groups  #
         #################
 
+        # CPU Node Group
+
         cluster.add_nodegroup_capacity(
             "cpu-node-group",
             # node_role=workerRole,
@@ -106,7 +108,7 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
             repository="https://aws.github.io/eks-charts",
             chart="eks/aws-load-balancer-controller",
             release="aws-load-balancer-controller",
-            version="1.3.1",  # https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml
+            version="1.3.1",  # mapping here: https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/helm/aws-load-balancer-controller/Chart.yaml
             namespace=alb_service_account.service_account_namespace,
             values={
                 "clusterName": cluster.cluster_name,
