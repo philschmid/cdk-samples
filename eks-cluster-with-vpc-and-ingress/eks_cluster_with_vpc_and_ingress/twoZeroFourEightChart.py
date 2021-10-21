@@ -13,7 +13,7 @@ class TwoZeroFourEightChart(Chart):
             self,
             "deployment",
             spec=k8s.DeploymentSpec(
-                replicas=2,
+                replicas=1,
                 selector=k8s.LabelSelector(match_labels=label),
                 template=k8s.PodTemplateSpec(
                     metadata=k8s.ObjectMeta(labels=label),
