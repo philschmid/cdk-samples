@@ -13,7 +13,10 @@ https://stackoverflow.com/questions/67762104/how-to-install-aws-load-balancer-co
 autoscaler: https://hackernoon.com/how-to-adjust-size-of-a-kubernetes-cluster-using-cluster-autoscaler-qy1j3t66
 https://gist.github.com/esys/bb7bbeb44565f85f48b3112a8d73a092
 
+## cdk8s
 
+* https://github.com/cdk8s-team/cdk8s/tree/master/examples
+* https://cdk8s.io/docs/latest/
 ## Idea 
 
 1x Stack für IaC

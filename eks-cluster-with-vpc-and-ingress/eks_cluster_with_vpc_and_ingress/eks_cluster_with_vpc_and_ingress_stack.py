@@ -7,20 +7,13 @@ from aws_cdk import core as cdk
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_eks as eks
-from cdk8s_aws_load_balancer_controller import AwsLoadBalancePolicy, VersionsLists
-from cdk8s import App, Chart
-from cdk8s_aws_load_balancer_controller import AwsLoadBalancerController
-import constructs as constructs
+from cdk8s import App
 
 import requests
 
-
-class AwsAlbChart(Chart):
-    def __init__(self, scope, name, *, cluster_name):
-        super().__init__(scope, name)
-        alb = AwsLoadBalancerController(self, "alb", cluster_name=cluster_name, create_service_account=False)
-        self.deployment_name = alb.deployment_name
-        self.deployment_name_space = alb.namespace
+##### chart
+from eks_cluster_with_vpc_and_ingress.webservice import WebService
+from eks_cluster_with_vpc_and_ingress.twoZeroFourEightChart import TwoZeroFourEightChart
 
 
 class EksClusterWithVpcAndIngressStack(cdk.Stack):
@@ -50,11 +43,41 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
             vpc=vpc,
             vpc_subnets=[ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE)],
             # mastersRole=clusterAdmin,
+            cluster_name=f"{construct_id}-cluster",
             output_cluster_name=True,
         )
+        # add permissions to iam user so see the cluster
         for user in authorized_iam_user_list:
             auth_user = iam.User.from_user_name(self, "MyImportedUserByName", user)
             cluster.aws_auth.add_user_mapping(auth_user, groups=["system:masters"])
+
+        #################
+        #  Node Groups  #
+        #################
+
+        cluster.add_nodegroup_capacity(
+            "cpu-node-group",
+            # node_role=workerRole,
+            instance_types=[ec2.InstanceType("m6i.large")],
+            min_size=1,
+            max_size=3,
+            disk_size=100,
+            ami_type=eks.NodegroupAmiType.AL2_X86_64,
+            labels={"accelerator": "cpu", "hardware": "intel"},
+        )
+
+        # GPU Node Group
+
+        # cluster.add_nodegroup_capacity(
+        #     "gpu-node-group",
+        #     # node_role=workerRole,
+        #     instance_types=[ec2.InstanceType("g4dn.xlarge")],
+        #     min_size=1,
+        #     max_size=3,
+        #     disk_size=100,
+        #     ami_type=eks.NodegroupAmiType.AL2_X86_64_GPU,
+        #     labels={"accelerator": "gpu", "hardware": "nvidia"},
+        # )
 
         ################
         #    Ingress   #
@@ -99,30 +122,24 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
 
         add_alb_chart.node.add_dependency(alb_service_account)
 
-        #################
-        #  Node Groups  #
-        ################
+        ###################################
+        #   Deployment of K8s Ressource   #
+        ###################################
 
-        cluster.add_nodegroup_capacity(
-            "custom-node-group",
-            # node_role=workerRole,
-            instance_types=[ec2.InstanceType("m5.large")],
-            min_size=1,
-            max_size=3,
-            disk_size=100,
-            ami_type=eks.NodegroupAmiType.AL2_X86_64,
-            # ami_type=eks.NodegroupAmiType.AL2_X86_64_GPU,
-        )
+        _2048 = TwoZeroFourEightChart(App(), "2048")
+        # add the cdk8s chart to the cluster
+        cluster.add_cdk8s_chart("2048", _2048)
 
-        # apply a kubernetes manifest to the cluster
-        # cluster.add_manifest(
-        #     "mypod",
-        #     api_version="v1",
-        #     kind="Pod",
-        #     metadata={"name": "mypod"},
-        #     spec={
-        #         "containers": [
-        #             {"name": "hello", "image": "paulbouwer/hello-kubernetes:1.5", "ports": [{"container_port": 8080}]}
-        #         ]
-        #     },
+        # # create a cdk8s chart and use `cdk8s.App` as the scope.
+        # echo_service = WebService(
+        #     App(),
+        #     "Webservice",
+        #     image="paulbouwer/hello-kubernetes:1.7",
+        #     replicas=2,
+        #     port=8080,
+        #     ingress_path="/*",
+        #     node_selector={"accelerator": "cpu"},
         # )
+
+        # # add the cdk8s chart to the cluster
+        # cluster.add_cdk8s_chart("echo-service", echo_service)
