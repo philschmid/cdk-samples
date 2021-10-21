@@ -35,3 +35,26 @@ The `cdktf.json` contains the provider and the terraform modules, which we use i
 }
 
 ```
+
+## Get Started
+
+Generate CDK for Terraform constructs for Terraform provides and modules used in the project.
+
+```
+~$ cdktf get
+```
+
+Compile and generate Terraform configuration
+
+```
+~$ cdktf synth
+```
+
+The above command will create a folder called `cdktf.out` that contains all Terraform JSON configuration that was generated.
+
+Run cdktf-cli commands
+
+```bash
+cdktf diff
+cdktf deploy
+```
