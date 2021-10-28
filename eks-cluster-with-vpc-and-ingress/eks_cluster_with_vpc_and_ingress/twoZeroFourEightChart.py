@@ -1,6 +1,7 @@
 from constructs import Construct, Node
 from cdk8s import App, Chart
-import cdk8s_plus as k8s
+import cdk8s_plus
+import cdk8s
 
 
 class TwoZeroFourEightChart(Chart):
@@ -9,31 +10,24 @@ class TwoZeroFourEightChart(Chart):
 
         label = {"app": Node.of(self).id}
 
-        webservice_deployment = k8s.Deployment(
+        webservice_deployment = cdk8s_plus.Deployment(
             self,
             "deployment",
-            spec=k8s.DeploymentSpec(
-                replicas=1,
-                selector=k8s.LabelSelector(match_labels=label),
-                template=k8s.PodTemplateSpec(
-                    metadata=k8s.ObjectMeta(labels=label),
-                    spec=k8s.PodSpec(
-                        containers=[
-                            k8s.Container(
-                                name="2048",
-                                image="alexwhen/docker-2048",
-                                image_pull_policy=k8s.ImagePullPolicy.ALWAYS,
-                                ports=[k8s.ContainerPort(container_port=80)],
-                            )
-                        ]
-                    ),
-                ),
-            ),
+            replicas=1,
+            metadata=cdk8s.ApiObjectMetadata(labels=label),
+            containers=[
+                cdk8s_plus.Container(
+                    name="2048",
+                    image="alexwhen/docker-2048",
+                    image_pull_policy=cdk8s_plus.ImagePullPolicy.ALWAYS,
+                    port=80,
+                )
+            ],
         )
-        webservice_service = webservice_deployment.expose(port=80, service_type=k8s.ServiceType.NODE_PORT)
+        webservice_service = webservice_deployment.expose(port=80, service_type=cdk8s_plus.ServiceType.NODE_PORT)
 
-        ingress = k8s.Ingress(
+        ingress = cdk8s_plus.Ingress(
             self,
             "ingress",
         )
-        ingress.addRule("/*", k8s.IngressBackend.fromService(webservice_service))
+        ingress.addRule("/*", cdk8s_plus.IngressBackend.fromService(webservice_service))

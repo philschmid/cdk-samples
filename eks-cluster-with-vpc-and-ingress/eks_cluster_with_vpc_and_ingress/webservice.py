@@ -1,7 +1,13 @@
 from typing import Mapping
 from constructs import Construct, Node
 from cdk8s import App, Chart
-import cdk8s_plus as k8s
+import cdk8s_plus
+import cdk8s
+from .imports import k8s
+
+
+# TODO WIP https://github.com/cdk8s-team/cdk8s/blob/master/examples/python/hello/main.py
+# last step was importing l1 K8s constructs
 
 
 class WebService(Construct):
@@ -22,7 +28,7 @@ class WebService(Construct):
 
         label = {"app": Node.of(self).id}
 
-        webservice_deployment = k8s.Deployment(
+        webservice_deployment = cdk8s_plus.Deployment(
             self,
             "deployment",
             spec=k8s.DeploymentSpec(
@@ -32,7 +38,7 @@ class WebService(Construct):
                     metadata=k8s.ObjectMeta(labels=label),
                     spec=k8s.PodSpec(
                         containers=[
-                            k8s.Container(
+                            cdk8s_plus.Container(
                                 name="web", image=image, ports=[k8s.ContainerPort(container_port=containerPort)]
                             )
                         ],
@@ -43,17 +49,17 @@ class WebService(Construct):
         )
         # won't work since containerPort <> Port
         # webservice_service = webservice_deployment.expose(port=port, service_type=k8s.ServiceType.NODE_PORT)
-        webservice_service = k8s.Service(
+        webservice_service = cdk8s_plus.Service(
             self,
             "service",
-            spec=k8s.ServiceSpec(
-                type=k8s.ServiceType.NODE_PORT,
-                ports=[k8s.ServicePort(port=port, target_port=k8s.IntOrString.from_number(containerPort))],
+            spec=cdk8s_plus.ServiceSpec(
+                type=cdk8s_plus.ServiceType.NODE_PORT,
+                ports=[cdk8s_plus.ServicePort(port=port, target_port=k8s.IntOrString.from_number(containerPort))],
                 selector=label,
             ),
         )
 
-        ingress = k8s.Ingress(
+        ingress = cdk8s_plus.Ingress(
             self,
             "ingress",
         )
