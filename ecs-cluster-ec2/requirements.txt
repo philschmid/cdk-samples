@@ -1,0 +1,6 @@
+aws_cdk.aws_ecs>=1.123.0
+aws_cdk.aws_ecs_patterns>=1.123.0
+aws_cdk.aws_autoscaling>=1.123.0
+aws_cdk.aws_ec2>=1.123.0
+aws_cdk.aws_iam>=1.123.0
+aws-cdk.core>=1.123.0
