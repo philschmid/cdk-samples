@@ -2,7 +2,7 @@
 
 This example creates an ECS Cluster including a VPC, Auto-Scaling Group for the ECS Cluster, ALB for our Webservice. It includes a `Construct` in [ecs_service](./infrastructure/ecs_service.py) `WebService`, which creates a Service with Task including optional autoscaling for this Task.
 
-![image.png](./image.png)
+![image.jpeg](./image.jpeg)
 
 ## Get started 
 
