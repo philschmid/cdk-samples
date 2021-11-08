@@ -1,7 +1,16 @@
 aws_cdk.aws_eks>=1.123.0
-aws_cdk.aws_ec2>=1.123.0
 aws_cdk.aws_iam>=1.123.0
 aws-cdk.core>=1.123.0
+aws-cdk.aws_logs>=1.123.0
+aws-cdk.aws_iam>=1.123.0
+# required for kubectl construct
+aws-cdk.aws_lambda>=1.123.0
+# aws_cdk.custom_resources>=1.123.0
+aws_cdk.lambda_layer_kubectl>=1.123.0
+aws_cdk.lambda_layer_awscli>=1.123.0
+aws_cdk.aws_s3_assets>=1.123.0
+aws_cdk.aws_ec2>=1.123.0
+
 # k8s and ingress
 requests
 cdk8s

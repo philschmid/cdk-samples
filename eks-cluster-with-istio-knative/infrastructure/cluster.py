@@ -13,11 +13,7 @@ import requests
 import yaml
 
 ##### chart
-# from eks_cluster_with_vpc_and_ingress.webservice import WebService
-# from eks_cluster_with_vpc_and_ingress.twoZeroFourEightChart import TwoZeroFourEightChart
-def load_k8s_manifest(url):
-    response = requests.get(url)
-    return list(yaml.safe_load_all(response.text))
+from infrastructure.kubectl_cdk import KubectlConstruct
 
 
 class EksClusterWithVpcAndIngressStack(cdk.Stack):
@@ -49,7 +45,7 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
             # mastersRole=clusterAdmin,
             cluster_name=f"{construct_id}-cluster",
             output_cluster_name=True,
-            kubectl_memory=cdk.Size.gibibytes(4),  # 4 GiB https://github.com/aws/aws-cdk/issues/11787
+            kubectl_memory=cdk.Size.gibibytes(2),  # 4 GiB https://github.com/aws/aws-cdk/issues/11787
         )
         # add permissions to iam user so see the cluster
         for user in authorized_iam_user_list:
@@ -93,61 +89,33 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         # adds the correct IAM Policies to the Role
         knative_version = "1.0.0"
 
-        # Received response status [FAILED] from custom resource. Message returned: Error: b'error: error validating "/tmp/manifest.yaml": error validating data: [apiVersion not
-        # set, kind not set]; if you choose to ignore these errors, turn validation off with --validate=false\n'
-
         # add serving crds
-        serving_crd = load_k8s_manifest(
-            f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-crds.yaml"
-        )
-
-        eks.KubernetesManifest(
+        serving_crd = KubectlConstruct(
             self,
-            "serving-crd",
+            "ServingCRD",
             cluster=cluster,
-            manifest=serving_crd,
-            skip_validation=True,
+            manifest=f"https://raw.githubusercontent.com/knative/serving/{knative_version}/third_party/istio-1.0.0/istio-crds.yaml",
         )
-
+        # serving_core = KubectlConstruct(
+        #     self,
+        #     "ServingCore",
+        #     cluster=cluster,
+        #     manifest=f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-core.yaml",
         # )
-        # cluster.add_manifest("serving-crd", serving_crd)
+        # serving_core.node.add_dependency(serving_crd)
 
-        # # add serving core
-        # serving_core = load_k8s_manifest(
-        #     f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-core.yaml"
+        # istio_install = KubectlConstruct(
+        #     self,
+        #     "IstioInstall",
+        #     cluster=cluster,
+        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml",
         # )
-        # cluster.add_manifest("serving-core", serving_core)
+        # istio_install.node.add_dependency(serving_core)
 
-        # # add serving
-        # istio_install = load_k8s_manifest(
-        #     f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml"
+        # istio_knative = KubectlConstruct(
+        #     self,
+        #     "IstioKnative",
+        #     cluster=cluster,
+        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml",
         # )
-        # cluster.add_manifest("istio-install", istio_install)
-
-        # # add istio knative controller
-        # istio_knative = load_k8s_manifest(
-        #     f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/net-istio.yaml"
-        # )
-        # cluster.add_manifest("istio-knative", istio_knative)
-
-        ###################################
-        #   Deployment of K8s Ressource   #
-        ###################################
-
-        # _2048 = TwoZeroFourEightChart(App(), "2048")
-        # # add the cdk8s chart to the cluster
-        # cluster.add_cdk8s_chart("2048", _2048)
-
-        # # create a cdk8s chart and use `cdk8s.App` as the scope.
-        # echo_service = WebService(
-        #     App(),
-        #     "Webservice",
-        #     image="paulbouwer/hello-kubernetes:1.7",
-        #     replicas=2,
-        #     port=8080,
-        #     ingress_path="/*",
-        #     node_selector={"accelerator": "cpu"},
-        # )
-
-        # # add the cdk8s chart to the cluster
-        # cluster.add_cdk8s_chart("echo-service", echo_service)
+        # istio_knative.node.add_dependency(istio_install)
