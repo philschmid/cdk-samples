@@ -1,0 +1,10 @@
+aws_cdk.aws_eks>=1.123.0
+aws_cdk.aws_ec2>=1.123.0
+aws_cdk.aws_iam>=1.123.0
+aws-cdk.core>=1.123.0
+# k8s and ingress
+requests
+cdk8s
+cdk8s-plus-21 # du to K8s 1.21 https://github.com/cdk8s-team/cdk8s-plus
+constructs
+pyyaml
