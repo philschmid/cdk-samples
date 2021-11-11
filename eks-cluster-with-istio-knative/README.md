@@ -147,7 +147,8 @@ spec:
 8. `kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
 
 _alternative:_
-`kubectl apply -f generated.yaml`
+`kubectl apply -f istio/istio-v1.0.0-operator.yaml`
+`kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
 
 
 **dns**
