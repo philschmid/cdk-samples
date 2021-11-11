@@ -13,6 +13,8 @@ https://stackoverflow.com/questions/67762104/how-to-install-aws-load-balancer-co
 autoscaler: https://hackernoon.com/how-to-adjust-size-of-a-kubernetes-cluster-using-cluster-autoscaler-qy1j3t66
 https://gist.github.com/esys/bb7bbeb44565f85f48b3112a8d73a092
 
+https://aws.amazon.com/es/blogs/opensource/network-load-balancer-nginx-ingress-controller-eks/
+
 
 # Todos
 
@@ -46,9 +48,126 @@ cdk8s import k8s --language python
 ## access cluster
 
 ```
-aws eks get-token --cluster-name EksClusterWithVpcAndIstio-cluster --region us-east-1 --profile hf-inf --role-arn arn:aws:iam::379486364332:role/EksClusterWithVpcAndIstio-eksClusterMastersRole632-1MVZCIODDYLSL
+aws eks update-kubeconfig --name EksClusterWithVpcAndIstio-cluster --region us-east-1 --profile hf-inf --role-arn arn:aws:iam::379486364332:role/EksClusterWithVpcAndIstio-eksClusterMastersRole632-9PHLWJQRKTJ9 --profile hf-inf
 ```
 
 
-aws eks update-kubeconfig --name EksClusterWithVpcAndIstio-cluster --region us-east-1 --profile hf-inf --role-arn arn:aws:iam::379486364332:role/EksClusterWithVpcAndIstio-eksClusterMastersRole632-1MVZCIODDYLSL
-aws eks get-token --cluster-name EksClusterWithVpcAndIstio-cluster --region us-east-1 --role-arn arn:aws:iam::379486364332:role/EksClusterWithVpcAndIstio-eksClusterMastersRole632-1MVZCIODDYLSL
+
+
+
+
+
+
+# Help full commands
+
+get service
+```Bash
+kn service list
+```
+
+get ingress 
+```Bash
+kubectl --namespace istio-system get service istio-ingressgateway
+```
+invoke knative service 
+```bash
+curl -H "Host: hello.default.example.com" http://a6b0542fef53845a0989205336adac53-1438702126.us-east-1.elb.amazonaws.com -v
+```
+
+kubectl patch configmap/config-domain \
+  --namespace knative-serving \
+  --type merge \
+  --patch '{"data":{"infinity.huggingface.co":""}}'
+
+
+curl -H "Host: test-example.default.example.com" http://infinity.huggingface.co/status/200
+
+
+
+
+
+
+# Install istio
+
+
+https://maytan.work/aws-alb-with-istio/
+https://istio.io/latest/blog/2018/aws-nlb/
+
+
+
+create `istio-operator.yaml`
+```yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    global:
+      proxy:
+        autoInject: disabled
+      useMCP: false
+      # The third-party-jwt is not enabled on all k8s.
+      # See: https://istio.io/docs/ops/best-practices/security/#configure-third-party-service-account-tokens
+      jwtPolicy: first-party-jwt
+    gateways:
+      istio-ingressgateway:
+        serviceAnnotations:
+          service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+          
+  addonComponents:
+    pilot:
+      enabled: true
+
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+```
+
+create `istio-peer-authencation.yaml`
+
+```bash
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "default"
+  namespace: "knative-serving"
+spec:
+  mtls:
+    mode: PERMISSIVE
+```
+
+
+1. `curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.4 TARGET_ARCH=x86_64 sh -`
+2. `chmod +x istio-1.11.4/bin/istioctl`
+3. `istio-1.11.4/bin/istioctl  install -f istio-operator.yaml --set profile=default`
+4. `kubectl label namespace knative-serving istio-injection=enabled`
+5. `kubectl apply -f istio-peer-authentication.yaml`
+6. check if it works `kubectl get pods --namespace istio-system`
+7. `kubectl --namespace istio-system get service istio-ingressgateway`
+8. `kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
+
+_alternative:_
+`kubectl apply -f generated.yaml`
+
+
+**dns**
+a. dns `kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.0.0/serving-default-domain.yaml`
+b. adjust dns `kubectl edit cm config-domain --namespace knative-serving`
+
+**uninstall**
+`istioctl x uninstall --purge`
+`kubectl delete -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
+
+**generate manifest for kubectl apply**
+https://discuss.istio.io/t/setting-gateways-istio-ingressgateway-serviceannotations/5711/5
+`istioctl manifest generate --set 'values.gateways.istio-ingressgateway.serviceAnnotations.service\.beta\.kubernetes\.io/aws-load-balancer-type=nlb' > generated.yaml`
+
+# Scaling
+
+```bash
+kubectl get pod -l serving.knative.dev/service=hello -w
+```
+
+```bash
+
+```

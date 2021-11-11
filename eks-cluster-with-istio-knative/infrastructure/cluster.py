@@ -104,30 +104,22 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         )
         serving_core.node.add_dependency(serving_crd)
 
-        # istio_install_with_label = KubectlConstruct(
-        #     self,
-        #     "IstioInstallWithLabel",
-        #     cluster=cluster,
-        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml",
-        #     label="knative.dev/crd-install=true",
-        # )
-        # istio_install_with_label.node.add_dependency(serving_core)
+        istio_install = KubectlConstruct(
+            self,
+            "IstioInstall",
+            cluster=cluster,
+            manifest=f"eks-cluster-with-istio-knative/infrastructure/istio/istio-v{knative_version}-operator.yaml",
+            label="knative.dev/crd-install=true",
+        )
+        istio_install.node.add_dependency(serving_core)
 
-        # istio_install = KubectlConstruct(
-        #     self,
-        #     "IstioInstall",
-        #     cluster=cluster,
-        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml",
-        # )
-        # istio_install.node.add_dependency(serving_core)
-
-        # istio_knative = KubectlConstruct(
-        #     self,
-        #     "IstioKnative",
-        #     cluster=cluster,
-        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/net-istio.yaml",
-        # )
-        # istio_knative.node.add_dependency(istio_install)
+        istio_knative = KubectlConstruct(
+            self,
+            "IstioKnative",
+            cluster=cluster,
+            manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/net-istio.yaml",
+        )
+        istio_knative.node.add_dependency(istio_install)
 
         # # configure dns
         # # TODO: real DNS :

@@ -1,0 +1,26 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: test
+  namespace: default
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/metric: "rps"
+        autoscaling.knative.dev/target: "10"
+    spec:
+      containers:
+        - image: mreferre/nginx-custom-site:0.2.1
+          env:
+            - name: INDEX_HTML_CONTENT
+              value: "This is my web app running on Knative/Fargate that scales to zero"
+            - name: HTTP_PORT
+              value: "8080"
+      timeoutSeconds: 300
+
+
+
+
+
+
