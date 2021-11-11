@@ -7,7 +7,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # these are coming from the kubectl layer
-# os.environ["PATH"] = "/opt/kubectl:/opt/awscli:" + os.environ["PATH"]
+os.environ["PATH"] = "/opt/kubectl:/opt/awscli:" + os.environ["PATH"]
 
 outdir = os.environ.get("TEST_OUTDIR", "/tmp")
 kubeconfig = os.path.join(outdir, "kubeconfig")
@@ -34,8 +34,9 @@ def on_create(event):
     update_kubeconfig(props)
 
     manifest = props["manifest"]
-    # add your create code here...
-    kubectl("apply", manifest)
+    label = props.get("label", None)
+
+    kubectl("apply", manifest, label)
 
     return {"PhysicalResourceId": manifest}
 
@@ -48,8 +49,9 @@ def on_update(event):
     update_kubeconfig(props)
 
     manifest = props["manifest"]
-    # add your create code here...
-    kubectl("apply", manifest)
+    label = props.get("label", None)
+
+    kubectl("apply", manifest, label)
 
 
 def on_delete(event):
@@ -59,8 +61,8 @@ def on_delete(event):
     update_kubeconfig(props)
 
     manifest = props["manifest"]
-    # add your create code here...
-    kubectl("delete", manifest)
+    label = props.get("label", None)
+    kubectl("delete", manifest, label)
 
 
 def update_kubeconfig(props):
@@ -69,7 +71,7 @@ def update_kubeconfig(props):
     role_arn = props["role_arn"]
     # "log in" to the cluster
     cmd = [
-        "/opt/awscli/aws",
+        "aws",
         "eks",
         "update-kubeconfig",
         "--role-arn",
@@ -86,14 +88,17 @@ def update_kubeconfig(props):
         os.chmod(kubeconfig, 0o600)
 
 
-def kubectl(verb, file, *opts):
+def kubectl(verb, file, label, *opts):
     maxAttempts = 3
     retry = maxAttempts
     if file.startswith("s3://"):
         file = download_s3_asset(file)
     while retry > 0:
         try:
-            cmd = ["/opt/kubectl/kubectl", verb, "--kubeconfig", kubeconfig, "-f", file] + list(opts)
+            if label:
+                cmd = ["kubectl", verb, "--kubeconfig", "-l", label, kubeconfig, "-f", file] + list(opts)
+            else:
+                cmd = ["kubectl", verb, "--kubeconfig", kubeconfig, "-f", file] + list(opts)
             logger.info(f"Running command: {cmd}")
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
@@ -102,7 +107,9 @@ def kubectl(verb, file, *opts):
                 retry = retry - 1
                 logger.info("kubectl timed out, retries left: %s" % retry)
             else:
-                raise Exception(output)
+                logger.info(output)
+                pass
+                # raise Exception(output)
         else:
             logger.info(output)
             return

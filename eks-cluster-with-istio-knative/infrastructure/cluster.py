@@ -94,15 +94,24 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
             self,
             "ServingCRD",
             cluster=cluster,
-            manifest=f"https://raw.githubusercontent.com/knative/serving/{knative_version}/third_party/istio-1.0.0/istio-crds.yaml",
+            manifest=f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-crds.yaml",
         )
-        # serving_core = KubectlConstruct(
+        serving_core = KubectlConstruct(
+            self,
+            "ServingCore",
+            cluster=cluster,
+            manifest=f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-core.yaml",
+        )
+        serving_core.node.add_dependency(serving_crd)
+
+        # istio_install_with_label = KubectlConstruct(
         #     self,
-        #     "ServingCore",
+        #     "IstioInstallWithLabel",
         #     cluster=cluster,
-        #     manifest=f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-core.yaml",
+        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml",
+        #     label="knative.dev/crd-install=true",
         # )
-        # serving_core.node.add_dependency(serving_crd)
+        # istio_install_with_label.node.add_dependency(serving_core)
 
         # istio_install = KubectlConstruct(
         #     self,
@@ -116,6 +125,20 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         #     self,
         #     "IstioKnative",
         #     cluster=cluster,
-        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/istio.yaml",
+        #     manifest=f"https://github.com/knative/net-istio/releases/download/knative-v{knative_version}/net-istio.yaml",
         # )
         # istio_knative.node.add_dependency(istio_install)
+
+        # # configure dns
+        # # TODO: real DNS :
+        # # * get ELB CNAME from the cluster
+        # # * set up CNAME in Route53 for the ELB: ELB.cname -> my-domain.com
+        # # * upate istio config
+        # # Magic DNS (sslip.io) https://knative.dev/docs/install/serving/install-serving-with-yaml/#configure-dns
+        # magic_dns = KubectlConstruct(
+        #     self,
+        #     "DNS",
+        #     cluster=cluster,
+        #     manifest=f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-default-domain.yaml",
+        # )
+        # magic_dns.node.add_dependency(istio_knative)
