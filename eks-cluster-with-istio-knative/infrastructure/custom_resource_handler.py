@@ -110,6 +110,8 @@ def kubectl(verb, file, label=None, *opts):
                 logger.info(output)
             elif b"the server could not find the requested" in output:
                 logger.info(output)
+            elif b"not found" in output:
+                logger.info(output)
             else:
                 logger.info(output)
                 raise Exception(output)

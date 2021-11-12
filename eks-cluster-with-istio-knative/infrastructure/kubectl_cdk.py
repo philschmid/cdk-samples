@@ -17,6 +17,9 @@ import requests
 import tempfile
 
 
+# https://github.com/hayao-k/cdk-ecr-image-scan-notify/blob/main/developAWSCDKConstructslib.md
+
+
 class KubectlConstruct(cdk.Construct):
     """Kubectl Construct
     Creates an AWS Lambda function for a Customer Cloudformation Ressource,
