@@ -1,23 +1,25 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: test
-  namespace: default
+  name: hello
+  labels:
+    # networking.knative.dev/visibility: cluster-local # doesn't expose to the public internet
 spec:
   template:
     metadata:
+      # This is the name of our new "Revision," it must follow the convention {service-name}-{revision-name}
+      # name: hello-world
       annotations:
         autoscaling.knative.dev/metric: "rps"
         autoscaling.knative.dev/target: "10"
     spec:
       containers:
-        - image: mreferre/nginx-custom-site:0.2.1
+        - image: gcr.io/knative-samples/helloworld-go
+          ports:
+            - containerPort: 8080
           env:
-            - name: INDEX_HTML_CONTENT
-              value: "This is my web app running on Knative/Fargate that scales to zero"
-            - name: HTTP_PORT
-              value: "8080"
-      timeoutSeconds: 300
+            - name: TARGET
+              value: "World"
 
 
 

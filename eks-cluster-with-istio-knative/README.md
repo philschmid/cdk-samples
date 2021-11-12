@@ -38,26 +38,16 @@ https://dev.to/aws-builders/a-beginner-s-guide-to-create-aws-cdk-construct-libra
 https://www.sebastianhesse.de/2021/03/01/migrating-a-cdk-construct-to-projen-and-jsii/
 https://github.com/hayao-k/cdk-ecr-image-scan-notify/blob/main/developAWSCDKConstructslib.md
 
-# Installation get L1 K9s constructs
+# Installation get L1 K8s constructs
 yarn global add cdk8s-cli
 
 cdk8s import k8s --language python
 
-
-
 ## access cluster
 
 ```
-aws eks update-kubeconfig --name EksClusterWithVpcAndIstio-cluster --region us-east-1 --profile hf-inf --role-arn arn:aws:iam::379486364332:role/EksClusterWithVpcAndIstio-eksClusterMastersRole632-9PHLWJQRKTJ9 --profile hf-inf
+aws eks update-kubeconfig --name EksClusterWithVpcAndIstio-cluster --region us-east-1 --role-arn arn:aws:iam::379486364332:role/EksClusterWithVpcAndIstio-eksClusterMastersRole632-9PHLWJQRKTJ9 --profile hf-inf
 ```
-
-
-
-
-
-
-
-
 # Help full commands
 
 get service
@@ -69,30 +59,22 @@ get ingress
 ```Bash
 kubectl --namespace istio-system get service istio-ingressgateway
 ```
-invoke knative service 
+
+
+edit ingress config-map
 ```bash
-curl -H "Host: hello.default.example.com" http://a6b0542fef53845a0989205336adac53-1438702126.us-east-1.elb.amazonaws.com -v
+kubectl edit cm config-domain --namespace knative-serving
 ```
 
-kubectl patch configmap/config-domain \
-  --namespace knative-serving \
-  --type merge \
-  --patch '{"data":{"infinity.huggingface.co":""}}'
+# istio
 
+### Install istio manually
 
-curl -H "Host: test-example.default.example.com" http://infinity.huggingface.co/status/200
-
-
-
-
-
-
-# Install istio
+### -> **Is integrated into CDK!**
 
 
 https://maytan.work/aws-alb-with-istio/
 https://istio.io/latest/blog/2018/aws-nlb/
-
 
 
 create `istio-operator.yaml`
@@ -139,36 +121,71 @@ spec:
 
 1. `curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.4 TARGET_ARCH=x86_64 sh -`
 2. `chmod +x istio-1.11.4/bin/istioctl`
-3. `istio-1.11.4/bin/istioctl  install -f istio-operator.yaml --set profile=default`
+3. `istio-1.11.4/bin/istioctl  install -f infrastructure/istio/istio-operator.yaml --set profile=default`
 4. `kubectl label namespace knative-serving istio-injection=enabled`
-5. `kubectl apply -f istio-peer-authentication.yaml`
+5. `kubectl apply -f infrastructure/istio/istio-peer-authentication.yaml`
 6. check if it works `kubectl get pods --namespace istio-system`
 7. `kubectl --namespace istio-system get service istio-ingressgateway`
 8. `kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
 
 _alternative:_
-`kubectl apply -f istio/istio-v1.0.0-operator.yaml`
+`kubectl apply -f infrastructure/istio/istio-v1.0.0-operator.yaml`
+`kubectl apply -f infrastructure/istio/istio-v1.0.0-operator.yaml`
+`kubectl label namespace knative-serving istio-injection=enabled`
 `kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
 
+_using knative istio yaml:_
+`kubectl apply -l knative.dev/crd-install=true -f infrastructure/istio/knative-istio.yaml`
+`kubectl apply -f infrastructure/istio/knative-istio.yaml`
+`kubectl apply -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
+`kubectl --namespace istio-system get service istio-ingressgateway`
 
 **dns**
 a. dns `kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.0.0/serving-default-domain.yaml`
 b. adjust dns `kubectl edit cm config-domain --namespace knative-serving`
+```bash
+kubectl patch configmap/config-domain \
+  --namespace knative-serving \
+  --type merge \
+  --patch '{"data":{"infinity.huggingface.co":""}}'
+```
+
+
 
 **uninstall**
 `istioctl x uninstall --purge`
 `kubectl delete -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml`
 
+_alternative:_
+`kubectl delete -f https://github.com/knative/net-istio/releases/download/knative-v1.0.0/net-istio.yaml -f infrastructure/istio/istio-v1.0.0-operator.yaml`
+
+
 **generate manifest for kubectl apply**
 https://discuss.istio.io/t/setting-gateways-istio-ingressgateway-serviceannotations/5711/5
 `istioctl manifest generate --set 'values.gateways.istio-ingressgateway.serviceAnnotations.service\.beta\.kubernetes\.io/aws-load-balancer-type=nlb' > generated.yaml`
 
-# Scaling
+### Upgrade knative Istio
 
-```bash
-kubectl get pod -l serving.knative.dev/service=hello -w
+get knative istio yaml -> add annotations for load balancer
+
+```Bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 ```
 
-```bash
+This will create a NLB for the ingress gateway instead of a CLB.
 
+
+# Deploy Knative Serving
+
+```bash
+kubectl apply -f hello_world.yaml
+kubectl get ksvc
 ```
+
+curl -H "Host: hello.default.example.com" http://a5adf19bc63b242b6b4999a1685ec3aa-2856ae13be6c2ef9.elb.us-east-1.amazonaws.com

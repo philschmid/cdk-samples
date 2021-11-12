@@ -88,7 +88,7 @@ def update_kubeconfig(props):
         os.chmod(kubeconfig, 0o600)
 
 
-def kubectl(verb, file, label, *opts):
+def kubectl(verb, file, label=None, *opts):
     maxAttempts = 3
     retry = maxAttempts
     if file.startswith("s3://"):
@@ -96,7 +96,7 @@ def kubectl(verb, file, label, *opts):
     while retry > 0:
         try:
             if label:
-                cmd = ["kubectl", verb, "--kubeconfig", "-l", label, kubeconfig, "-f", file] + list(opts)
+                cmd = ["kubectl", verb, "--kubeconfig", kubeconfig, "-l", label, "-f", file] + list(opts)
             else:
                 cmd = ["kubectl", verb, "--kubeconfig", kubeconfig, "-f", file] + list(opts)
             logger.info(f"Running command: {cmd}")
@@ -106,10 +106,13 @@ def kubectl(verb, file, label, *opts):
             if b"i/o timeout" in output and retry > 0:
                 retry = retry - 1
                 logger.info("kubectl timed out, retries left: %s" % retry)
+            elif b"no matches" in output:
+                logger.info(output)
+            elif b"the server could not find the requested" in output:
+                logger.info(output)
             else:
                 logger.info(output)
-                pass
-                # raise Exception(output)
+                raise Exception(output)
         else:
             logger.info(output)
             return
@@ -124,16 +127,3 @@ def download_s3_asset(s3_object_url):
     s3 = boto3.client("s3")
     s3.download_file(bucket, key, "/tmp/manifest.yaml")
     return "/tmp/manifest.yaml"
-
-
-# only needed for async resources
-# https://github.com/royby-cyberark/iot-policy-custom-resource-example/blob/master/cdk_custom_resource_example/iot_policy/iot_policy_resource_async.py
-def is_complete(event, context):
-    physical_id = event["PhysicalResourceId"]
-    request_type = event["RequestType"]
-
-    # check if resource is stable based on request_type
-    # is_ready = function_call_to_test_if_ready()
-    is_ready = True
-
-    return {"IsComplete": is_ready}

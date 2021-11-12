@@ -61,9 +61,9 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         cluster.add_nodegroup_capacity(
             "cpu-node-group",
             # node_role=workerRole,
-            instance_types=[ec2.InstanceType("m6i.large")],
-            min_size=1,
-            max_size=3,
+            instance_types=[ec2.InstanceType("m6i.xlarge")],
+            min_size=3,
+            max_size=6,
             disk_size=100,
             ami_type=eks.NodegroupAmiType.AL2_X86_64,
             labels={"accelerator": "cpu", "hardware": "intel"},
@@ -82,9 +82,9 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         #     labels={"accelerator": "gpu", "hardware": "nvidia"},
         # )
 
-        ################
-        #    knative   #
-        ################
+        ########################
+        #    knative & Istio   #
+        ########################
 
         # adds the correct IAM Policies to the Role
         knative_version = "1.0.0"
@@ -104,14 +104,23 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         )
         serving_core.node.add_dependency(serving_crd)
 
+        # TODO: need to install istio currenlty manually
+        istio_install_with_label = KubectlConstruct(
+            self,
+            "IstioInstallWithLabel",
+            cluster=cluster,
+            manifest=f"infrastructure/istio/knative-istio.yaml",
+            label="knative.dev/crd-install=true",
+        )
+        istio_install_with_label.node.add_dependency(serving_core)
+
         istio_install = KubectlConstruct(
             self,
             "IstioInstall",
             cluster=cluster,
-            manifest=f"eks-cluster-with-istio-knative/infrastructure/istio/istio-v{knative_version}-operator.yaml",
-            label="knative.dev/crd-install=true",
+            manifest=f"infrastructure/istio/knative-istio.yaml",
         )
-        istio_install.node.add_dependency(serving_core)
+        istio_install.node.add_dependency(istio_install_with_label)
 
         istio_knative = KubectlConstruct(
             self,
@@ -121,16 +130,12 @@ class EksClusterWithVpcAndIngressStack(cdk.Stack):
         )
         istio_knative.node.add_dependency(istio_install)
 
-        # # configure dns
-        # # TODO: real DNS :
-        # # * get ELB CNAME from the cluster
-        # # * set up CNAME in Route53 for the ELB: ELB.cname -> my-domain.com
-        # # * upate istio config
-        # # Magic DNS (sslip.io) https://knative.dev/docs/install/serving/install-serving-with-yaml/#configure-dns
-        # magic_dns = KubectlConstruct(
-        #     self,
-        #     "DNS",
-        #     cluster=cluster,
-        #     manifest=f"https://github.com/knative/serving/releases/download/knative-v{knative_version}/serving-default-domain.yaml",
-        # )
-        # magic_dns.node.add_dependency(istio_knative)
+        ########################
+        #     DNS & Routing    #
+        ########################
+
+        # 1. create hosted zone for domain
+        # 2. add A record to hosted zone for NLB -> get NLB with https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_eks/README.html#querying-kubernetes-resources
+        # load_balancer_address = cluster.get_service_load_balancer_address("istio-ingress")
+        # 3. update/patch knative DNS
+        # 4. add manual nameserver to correct domain
