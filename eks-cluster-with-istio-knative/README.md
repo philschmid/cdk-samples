@@ -184,8 +184,38 @@ This will create a NLB for the ingress gateway instead of a CLB.
 # Deploy Knative Serving
 
 ```bash
-kubectl apply -f hello_world.yaml
+kubectl apply -f sample/hello_world.yaml
 kubectl get ksvc
 ```
 
+```
 curl -H "Host: hello.default.example.com" http://a5adf19bc63b242b6b4999a1685ec3aa-2856ae13be6c2ef9.elb.us-east-1.amazonaws.com
+```
+
+# Samples
+
+## Istio Routing Sample
+
+https://github.com/knative/docs/tree/main/docs/serving/samples/knative-routing-go
+
+1. create internal services + istio entrypoints
+```bash
+kubectl apply -f sample/routing_services.yaml
+kubectl apply -f sample/routing_istio.yaml
+```
+2. Get Gateway IP (NLB)
+```bash
+export NLB=`kubectl get svc istio-ingressgateway --namespace istio-system \
+    --output jsonpath="{.status.loadBalancer.ingress[*]['hostname']}"`
+# aasd42b6b4999a1685ec3aa-2856ae13be6c2ef9.elb.us-east-1.amazonaws.com%
+```
+
+3. Request login service 
+```bash
+curl -H "Host: example.com" http://$NLB/login
+```
+
+4. Request search service 
+```bash
+curl -H "Host: example.com" http://$NLB/search
+```

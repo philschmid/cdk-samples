@@ -1,0 +1,43 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: search-service
+  namespace: default
+  labels:
+    networking.knative.dev/visibility: cluster-local # doesn't expose to the public internet -> can recieve request over istio
+spec:
+  template:
+    spec:
+      containers:
+      - image: gcr.io/knative-samples/helloworld-go
+        ports:
+          - containerPort: 8080
+        env:
+          - name: TARGET
+            value: "Search"
+        readinessProbe:
+          httpGet:
+            path: /
+          initialDelaySeconds: 3
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: login-service
+  namespace: default
+  labels:
+    networking.knative.dev/visibility: cluster-local # doesn't expose to the public internet -> can recieve request over istio
+spec:
+  template:
+    spec:
+      containers:
+      - image: gcr.io/knative-samples/helloworld-go
+        ports:
+          - containerPort: 8080
+        env:
+          - name: TARGET
+            value: "login"
+        readinessProbe:
+          httpGet:
+            path: /
+          initialDelaySeconds: 3
