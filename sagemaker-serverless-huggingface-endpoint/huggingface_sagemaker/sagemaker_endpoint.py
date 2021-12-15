@@ -36,7 +36,6 @@ class SageMakerEndpointConstruct(cdk.Construct):
         model_data: str,
         huggingface_task: str,
         execution_role_arn: str,
-        instance_type: str,
     ) -> None:
         super().__init__(scope, construct_id)
 
@@ -54,8 +53,7 @@ class SageMakerEndpointConstruct(cdk.Construct):
         endpoint_name = f"endpoint-{parsed_model_name}"
 
         # creates the image_uir based on the instance type and region
-        use_gpu = is_gpu_instance(instance_type)
-        image_uri = get_image_uri(region=env.region, use_gpu=use_gpu)
+        image_uri = get_image_uri(region=env.region, use_gpu=False)
 
         # defines and creates container configuration for deployment
         container_environment = {}
