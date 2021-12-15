@@ -28,9 +28,10 @@ Deploy your Hugging Face Transformer model to Amazon SageMaker
 
 ```bash
 cdk deploy \
-  -c model="sshleifer/distilbart-cnn-12-6" \
-  -c task="summarization"
+   -c model="distilbert-base-uncased-finetuned-sst-2-english" \
+   -c task="text-classification"
 ```
+
 
 request your endpoint
 ```bash
@@ -46,7 +47,7 @@ curl --request POST \
 clean up
 
 ```bash
-cdk destroy
+cdk destroy 
 ```
 
 
@@ -62,7 +63,5 @@ cdk destroy
 
 ## Extras
 
-To customize it you can adjust the `config.py` or fork it. There is also an additional Parameter. `instance_type` you can define when running `cdk deploy` if you want to host on a specifc machine. 
+To customize it you can adjust the `config.py` or fork it. There is also an additional Parameter. `role` and `model_data` you can define when running `cdk deploy` if you want to provide an existing IAM role or if your model is stored on S3. 
 
-
-cdk synth --profile hf-sm -c model=distilbert-base-uncased

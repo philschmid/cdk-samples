@@ -102,7 +102,7 @@ class HuggingfaceSagemaker(cdk.Stack):
                             "sagemaker:InvokeEndpoint",
                         ],
                         resources=[
-                            f"arn:aws:sagemaker:{self.region}:{self.account}:endpoint/{endpoint.endpoint_name}",
+                            f"arn:aws:sagemaker:{self.region}:{self.account}:endpoint/{endpoint.endpoint_name.lower()}",
                         ],
                     )
                 ],
@@ -117,8 +117,8 @@ class HuggingfaceSagemaker(cdk.Stack):
             deploy_options=_apigw.StageOptions(stage_name="prod"),
         )
 
-        # create /endpoint_name route
-        endpoint_gateway = api.root.add_resource(endpoint.endpoint_name)
+        # create /model_name route
+        endpoint_gateway = api.root.add_resource(endpoint.model_name)
 
         # enable cors for POST
         endpoint_gateway.add_cors_preflight(allow_origins=["*"], allow_methods=["POST"])

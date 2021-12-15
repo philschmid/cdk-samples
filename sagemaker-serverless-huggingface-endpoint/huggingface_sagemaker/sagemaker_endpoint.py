@@ -46,7 +46,9 @@ class SageMakerEndpointConstruct(cdk.Construct):
         if huggingface_model is None:
             parsed_model_name = "huggingface-transformers"
         else:
-            parsed_model_name = huggingface_model.replace("_", "-").replace("/", "--")
+            parsed_model_name = huggingface_model.replace("_", "-")
+            if "/" in parsed_model_name:
+                parsed_model_name = parsed_model_name.split("/")[-1]
 
         model_name = f"model-{parsed_model_name}"
         endpoint_config_name = f"config-{parsed_model_name}"
@@ -105,3 +107,4 @@ class SageMakerEndpointConstruct(cdk.Construct):
 
         # construct export values
         self.endpoint_name = endpoint.endpoint_name
+        self.model_name = parsed_model_name
