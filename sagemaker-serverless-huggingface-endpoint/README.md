@@ -21,7 +21,9 @@ pip3 install -r requirements.txt
 [Bootstrap](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html) your application in the cloud.
 
 ```bash
-cdk bootstrap
+cdk bootstrap \
+   -c model="distilbert-base-uncased-finetuned-sst-2-english" \
+   -c task="text-classification"
 ```
 
 Deploy your Hugging Face Transformer model to Amazon SageMaker
