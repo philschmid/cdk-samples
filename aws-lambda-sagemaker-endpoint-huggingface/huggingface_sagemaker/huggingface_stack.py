@@ -102,7 +102,7 @@ class HuggingfaceSagemaker(cdk.Stack):
                     "sagemaker:InvokeEndpoint",
                 ],
                 resources=[
-                    f"arn:aws:sagemaker:{self.region}:{self.account}:endpoint/{endpoint.endpoint_name}",
+                    f"arn:aws:sagemaker:{self.region}:{self.account}:endpoint/{endpoint.endpoint_name.lower()}",
                 ],
             )
         )
