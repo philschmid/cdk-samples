@@ -60,6 +60,8 @@ class SageMakerEndpointConstruct(cdk.Construct):
         # defines and creates container configuration for deployment
         container_environment = {}
         container_environment["HF_TASK"] = huggingface_task
+        # FIXME: Added TEMP "MMS_DEFAULT_WORKERS_PER_MODEL=1" to be able to load models >512MB
+        container_environment["MMS_DEFAULT_WORKERS_PER_MODEL"] = str(1)
         if huggingface_model:
             container_environment["HF_MODEL_ID"] = huggingface_model
 
