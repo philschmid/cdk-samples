@@ -1,6 +1,6 @@
 # CDK Sample: Private cross-account APIs with Amazon API Gateway and AWS PrivateLink
 
-This example creates an ECS Cluster with a private a VPC Endpoint for a secure, protected API. This example based on [apigateway-vpcendpoints](https://github.com/aws-samples/apigateway-vpcendpoints)
+This example creates an ECS Cluster with a private a VPC Endpoint for a secure, protected API. This example based on [apigateway-vpcendpoints](https://github.com/aws-samples/apigateway-vpcendpoints). Additional example [cross-account VPC access in AWS]( https://tomgregory.com/cross-account-vpc-access-in-aws/)
 
 ![image.jpeg](./image.png)
 
