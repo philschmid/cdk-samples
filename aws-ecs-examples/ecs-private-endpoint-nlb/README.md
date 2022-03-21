@@ -36,7 +36,6 @@ We will use the `AWS_PROFILE` variable to select our provider profile. Additiona
 ```bash
 cd provider-stack
 AWS_PROFILE=provider cdk deploy -c consumer-aws-account-id={CONSUMER_ACCOUNT_ID}
-AWS_PROFILE=hf-sm cdk deploy -c consumer-aws-account-id=379486364332
 ```
 
 After the deployment you should see the following output:
@@ -56,7 +55,6 @@ We will use the `AWS_PROFILE` variable to select our consumer profile. Additiona
 ```bash
 cd consumer-stack
 AWS_PROFILE=consumer cdk deploy -c vpc-endpoint-service-name={VpcEndpointServiceName}
-AWS_PROFILE=hf-inf cdk synth -c vpc-endpoint-service-name=com.amazonaws.vpce.us-east-1.vpce-svc-044bd69df82620e22
 ```
 
 InferfaceEndpointDns
@@ -78,3 +76,20 @@ curl -s -k http://vpce-01187c3cb17771308-wezoci4n.vpce-svc-044bd69df82620e22.us-
 ```
 
 ![example](./example.png)
+
+5. Clean up 
+
+delete provider stack
+
+```bash
+cd provider-stack
+AWS_PROFILE=provider cdk deploy -c consumer-aws-account-id={CONSUMER_ACCOUNT_ID}
+
+```
+
+delete consumer stack
+
+```bash
+cd consumer-stack
+AWS_PROFILE=consumer cdk destroy -c vpc-endpoint-service-name={VpcEndpointServiceName}
+```
