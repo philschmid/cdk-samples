@@ -11,7 +11,8 @@ class ClusterWithVpcAndNlbStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        allowed_aws_accounts = ["379486364332"]
+        allowed_aws_account_id = self.node.try_get_context("consumer-aws-account-id")
+        # allowed_aws_accounts = ["379486364332"]
 
         # creates dedicated VPC with 1 nat gateway
         vpc = ec2.Vpc(
@@ -58,7 +59,8 @@ class ClusterWithVpcAndNlbStack(cdk.Stack):
             vpc_endpoint_service_load_balancers=[ecs_service.load_balancer],
             acceptance_required=False,
             whitelisted_principals=[
-                iam.ArnPrincipal(f"arn:aws:iam::{account_id}:root") for account_id in allowed_aws_accounts
+                # iam.ArnPrincipal(f"arn:aws:iam::{account_id}:root") for account_id in allowed_aws_accounts
+                iam.ArnPrincipal(f"arn:aws:iam::{allowed_aws_account_id}:root")
             ],
         )
         cdk.CfnOutput(self, "VpcEndpointServiceName", value=vpc_endpoint.vpc_endpoint_service_name)
