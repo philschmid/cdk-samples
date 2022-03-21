@@ -10,7 +10,7 @@ To simulate a real-world do you need two AWS Accounts 1 for the consumer 1 for t
 
 ## Get started 
 
-1. Setup project and CDK
+### 1. Setup project and CDK
 
 clone the repository 
 ```bash
@@ -29,7 +29,7 @@ pip3 install -r requirements.txt
 cdk bootstrap
 ```
 
-2. Deploy provider stack
+### 2. Deploy provider stack
 
 We will use the `AWS_PROFILE` variable to select our provider profile. Additionally we need to provide a context variable for our consumer account. This context variable is the `consumer-aws-account-id` and is used to authenticate the consumer with the provider.
 
@@ -48,7 +48,7 @@ ClusterWithVpcAndNlbStack.VpcEndpointServiceName = com.amazonaws.vpce.us-east-1.
 
 Copy the `VpcEndpointServiceName` we ll need it for the consumer deployment to create the interface endpoint
 
-3. Deploy consumer stack
+### 3. Deploy consumer stack
 
 We will use the `AWS_PROFILE` variable to select our consumer profile. Additionally we need to provide a context variable for our consumer account. This context variable is the `vpc-endpoint-service-name` and is used to create the interface endpoint in  the consumer to access the provider.
 
@@ -68,7 +68,7 @@ Ec2WithVpc.InferfaceEndpointDns = Z7HUB22UULQXV:vpce-01187c3cb17771308-wezoci4n.
 Remove the `Z7HUB22UULQXV:**` from the output and use it as the DNS name for the consumer ec2.
 
 
-4. Test endpoint
+### 4. Test endpoint
   
 Go to the consumer ec2 console and login into the instance using SSM Agent. After that you should be able to run the following curl command
 ```bash
@@ -77,7 +77,7 @@ curl -s -k http://vpce-01187c3cb17771308-wezoci4n.vpce-svc-044bd69df82620e22.us-
 
 ![example](./example.png)
 
-5. Clean up 
+### 5. Clean up 
 
 delete provider stack
 
