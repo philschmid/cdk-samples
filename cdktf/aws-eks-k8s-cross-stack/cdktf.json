@@ -1,0 +1,32 @@
+{
+  "language": "python",
+  "app": "python3 ./main.py",
+  "projectId": "52055aa9-0297-452a-99bf-75a1bf575b33",
+  "terraformProviders": [    {
+    "name": "aws",
+    "source": "hashicorp/aws",
+    "version": "~> 4.10.0"
+  }, {
+    "name": "kubernetes",
+    "source": "hashicorp/kubernetes",
+    "version": "~> 2.10.0"
+  }
+ ],
+  "terraformModules": [
+    {
+      "name": "eks",
+      "source": "terraform-aws-modules/eks/aws",
+      "version":  "18.20.2"
+    },
+    {
+      "name": "vpc",
+      "source": "terraform-aws-modules/vpc/aws",
+      "version": "3.14.0"
+    }
+  ],
+  "codeMakerOutput": "imports",
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+    "allowSepCharsInLogicalIds": "true"
+  }
+}
