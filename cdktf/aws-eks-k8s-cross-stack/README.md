@@ -37,6 +37,13 @@ This will deploy the `aws-strack` and the `aws-kubernetes` to AWS.
 
 _coming soon_
 
+Deploy HF endpoint infrastucture with
+```bash
+AWS_PROFILE=hf-sm cdktf deploy 'azure-*'
+```
+This will deploy the `azure-strack` and the `azure-kubernetes` to AWS.
+
+
 # Resources
 
 * [CDKTF Documentation](https://www.terraform.io/cdktf)
