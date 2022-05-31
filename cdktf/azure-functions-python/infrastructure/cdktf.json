@@ -1,0 +1,14 @@
+{
+  "language": "python",
+  "app": "python3 ./main.py",
+  "projectId": "d48ea19f-1b1c-4bcf-90e3-4e771f2fa625",
+  "terraformProviders": [
+    "azurerm@~> 3.6.0"
+  ],
+  "terraformModules": [],
+  "codeMakerOutput": "imports",
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+"allowSepCharsInLogicalIds": "true"
+  }
+}
